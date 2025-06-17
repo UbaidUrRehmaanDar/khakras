@@ -1,0 +1,21 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Chakras Music Player Frontend",
+  "scripts": {
+    "build-css": "tailwindcss -i ./css/input.css -o ./css/style.css --watch",
+    "dev": "concurrently \"npm run build-css\" \"live-server . --port=3000 --no-browser\"",
+    "serve": "live-server . --port=3000"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.5",
+    "@tailwindcss/forms": "^0.5.6",
+    "daisyui": "^3.9.4",
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "lucide": "^0.294.0",
+    "axios": "^1.6.0"
+  }
+}

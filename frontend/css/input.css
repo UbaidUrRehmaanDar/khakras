@@ -1,0 +1,297 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Chakras Theme */
+:root {
+  --chakra-gradient: linear-gradient(135deg, #4a1a4a 0%, #2d1b3d 50%, #1a0f1a 100%);
+  --chakra-dark: #1a0f1a;
+  --chakra-darker: #2d1b3d;
+  --chakra-purple: #4a1a4a;
+  --chakra-accent: #ff6b9d;
+  --chakra-pink: #c44569;
+}
+
+body {
+  background: var(--chakra-gradient);
+  background-attachment: fixed;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(45, 27, 61, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 69, 105, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 69, 105, 0.8);
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(45, 27, 61, 0.4);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 107, 157, 0.2);
+}
+
+/* Hover animations */
+.hover-scale {
+  transition: all 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(255, 107, 157, 0.3);
+}
+
+/* Custom gradient backgrounds */
+.gradient-chakra {
+  background: var(--chakra-gradient);
+}
+
+.bg-chakra-dark {
+  background-color: var(--chakra-dark);
+}
+
+.bg-chakra-darker {
+  background: rgba(45, 27, 61, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.bg-chakra-purple {
+  background-color: var(--chakra-purple);
+}
+
+/* Audio visualizer bars */
+.audio-bar {
+  width: 4px;
+  background: var(--chakra-accent);
+  margin: 0 1px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.audio-bar.active {
+  animation: audio-wave 1s ease-in-out infinite alternate;
+}
+
+.audio-bar:not(.active) {
+  animation: none;
+  height: 8px !important;
+}
+
+.audio-bar:nth-child(1) { animation-delay: 0s; }
+.audio-bar:nth-child(2) { animation-delay: 0.1s; }
+.audio-bar:nth-child(3) { animation-delay: 0.2s; }
+.audio-bar:nth-child(4) { animation-delay: 0.3s; }
+.audio-bar:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes audio-wave {
+  0% { height: 8px; }
+  50% { height: 24px; }
+  100% { height: 12px; }
+}
+
+/* BIGGER Progress Bar */
+.progress-bar {
+  background: rgba(255, 107, 157, 0.3);
+  cursor: pointer;
+  border-radius: 6px;
+  position: relative;
+  height: 8px;
+  transition: all 0.2s ease;
+}
+
+.progress-bar:hover {
+  background: rgba(255, 107, 157, 0.4);
+  height: 10px;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #ff6b9d 0%, #c44569 100%);
+  border-radius: 6px;
+  height: 100%;
+  transition: width 0.1s ease;
+}
+
+/* BIGGER Volume Bar */
+.volume-bar {
+  background: rgba(255, 107, 157, 0.3);
+  cursor: pointer;
+  border-radius: 6px;
+  position: relative;
+  height: 8px;
+  transition: all 0.2s ease;
+}
+
+.volume-bar:hover {
+  background: rgba(255, 107, 157, 0.4);
+  height: 10px;
+}
+
+.volume-fill {
+  background: linear-gradient(90deg, #ff6b9d 0%, #c44569 100%);
+  border-radius: 6px;
+  height: 100%;
+  transition: width 0.1s ease;
+}
+
+/* Button hover effects */
+.btn-chakra {
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-chakra:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 107, 157, 0.4);
+}
+
+.btn-chakra:active {
+  transform: translateY(0);
+}
+
+/* Player control buttons */
+.player-control {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.player-control:hover {
+  transform: scale(1.1);
+}
+
+.player-control:active {
+  transform: scale(0.95);
+}
+
+/* Active states for shuffle/repeat */
+.control-active {
+  color: var(--chakra-accent) !important;
+}
+
+/* Navigation active states */
+.nav-active {
+  background-color: rgba(255, 107, 157, 0.2) !important;
+}
+
+.nav-active i,
+.nav-active span {
+  color: var(--chakra-accent) !important;
+}
+
+/* Song row hover effects */
+.song-row {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.song-row:hover {
+  background: rgba(255, 107, 157, 0.1) !important;
+  transform: translateX(4px);
+}
+
+.song-row.playing {
+  background: rgba(255, 107, 157, 0.2) !important;
+  border-left: 4px solid var(--chakra-accent);
+}
+
+.song-row .song-number {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.song-row:hover .song-number {
+  display: none;
+}
+
+.song-row .song-play-icon {
+  display: none;
+}
+
+.song-row:hover .song-play-icon {
+  display: block;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  border: 3px solid rgba(255, 107, 157, 0.3);
+  border-top: 3px solid var(--chakra-accent);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hover-scale:hover {
+    transform: none;
+  }
+  
+  .audio-visualizer {
+    display: none;
+  }
+  
+  .song-row {
+    padding: 12px 16px;
+  }
+}
+
+/* Custom utilities */
+.text-chakra-primary {
+  color: var(--chakra-accent);
+}
+
+.text-chakra-secondary {
+  color: var(--chakra-pink);
+}
+
+.border-chakra-primary {
+  border-color: var(--chakra-accent);
+}
+
+/* Scrollbar for content areas */
+.content-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-scroll::-webkit-scrollbar-track {
+  background: rgba(45, 27, 61, 0.2);
+}
+
+.content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(196, 69, 105, 0.4);
+  border-radius: 3px;
+}
+
+/* Loading state for play button */
+.loading i {
+  animation: spin 1s linear infinite;
+}
+
+/* Bigger player bar */
+.h-24 {
+  height: 6rem;
+}
+
+/* Icon sizes */
+.fas {
+  width: auto;
+  height: auto;
+}

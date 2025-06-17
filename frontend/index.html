@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="chakra">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chakras - Music Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FONT AWESOME FOR RELIABLE ICONS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="./css/style.css" rel="stylesheet">
+</head>
+<body class="bg-chakra-dark text-white font-sans overflow-hidden">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-chakra-darker flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 gradient-chakra rounded-full flex items-center justify-center">
+                        <i class="fas fa-music w-5 h-5 text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">Chakras</h1>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="p-4">
+                <div class="relative">
+                    <input 
+                        id="search-input"
+                        type="text" 
+                        placeholder="Search songs, artists..." 
+                        class="w-full bg-gray-800 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-chakra-primary"
+                    >
+                    <i class="fas fa-search absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 content-scroll overflow-y-auto">
+                <div class="space-y-1">
+                    <!-- Your Music Section -->
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Music</p>
+                    
+                    <a href="#" data-view="home" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-home w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Home</span>
+                    </a>
+                    
+                    <a href="#" data-view="queue" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-list w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Current Queue</span>
+                    </a>
+                    
+                    <a href="#" data-view="songs" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-music w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">All Songs</span>
+                    </a>
+                    
+                    <a href="#" data-view="albums" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group nav-active">
+                        <i class="fas fa-compact-disc w-5 h-5 text-chakra-primary"></i>
+                        <span class="text-chakra-primary">Albums</span>
+                    </a>
+                    
+                    <a href="#" data-view="artists" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-user w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Artists</span>
+                    </a>
+                    
+                    <a href="#" data-view="genres" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-radio w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Genres</span>
+                    </a>
+                </div>
+
+                <!-- Playlists Section -->
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Playlists</p>
+                        <button class="w-4 h-4 text-gray-400 hover:text-white">
+                            <i class="fas fa-plus w-4 h-4"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <a href="#" data-view="favorites" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-heart w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">Favorites</span>
+                        </a>
+                        
+                        <a href="#" data-view="recent" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-clock w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">Recently Played</span>
+                        </a>
+                        
+                        <a href="#" data-view="playlist1" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-list-music w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">My Playlist #1</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Manage Section -->
+                <div class="mt-6">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Manage</p>
+                    
+                    <div class="space-y-1">
+                        <a href="#" data-view="settings" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-cog w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">Settings</span>
+                        </a>
+                        
+                        <a href="#" data-view="upload" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-upload w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">Upload</span>
+                        </a>
+                        
+                        <a href="#" data-view="users" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                            <i class="fas fa-users w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                            <span class="text-gray-300 group-hover:text-white">Users</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-chakra-primary rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold">U</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-white">UbaidUrRehmaanDar</p>
+                        <p class="text-xs text-gray-400">Free Plan</p>
+                    </div>
+                    <button class="w-4 h-4 text-gray-400 hover:text-white">
+                        <i class="fas fa-ellipsis-h w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="h-16 bg-chakra-darker border-b border-gray-700 flex items-center justify-between px-6">
+                <div class="flex items-center space-x-4">
+                    <h2 id="page-title" class="text-2xl font-bold text-white">Albums</h2>
+                    <div id="page-stats" class="text-sm text-gray-400 hidden">
+                        <!-- Will show song/album counts -->
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="scan-library-btn" class="btn-chakra px-4 py-2 rounded-lg text-white text-sm hidden">
+                        <i class="fas fa-sync-alt w-4 h-4 mr-2"></i>
+                        Scan Library
+                    </button>
+                    
+                    <button id="view-grid-btn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-th w-4 h-4 text-gray-400"></i>
+                    </button>
+                    
+                    <button id="view-list-btn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-list w-4 h-4 text-gray-400"></i>
+                    </button>
+                    
+                    <button id="shuffle-all-btn" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-random w-4 h-4 text-gray-400"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto p-6 content-scroll">
+                <!-- Dynamic Content -->
+                <div id="main-content">
+                    <!-- Albums Grid -->
+                    <div id="albums-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        <!-- Content will be dynamically loaded here -->
+                    </div>
+                    
+                    <!-- Artists Grid -->
+                    <div id="artists-grid" class="hidden grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                        <!-- Artists will be loaded here -->
+                    </div>
+                    
+                    <!-- Songs List -->
+                    <div id="songs-list" class="hidden">
+                        <!-- Songs will be loaded here -->
+                    </div>
+
+                    <!-- Genres Grid -->
+                    <div id="genres-grid" class="hidden grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Genres will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- BIGGER Music Player Bottom Bar -->
+    <div class="fixed bottom-0 left-0 right-0 h-24 bg-chakra-darker border-t border-chakra-purple/30 flex items-center px-6 glass">
+        <!-- Currently Playing Song Info -->
+        <div class="flex items-center space-x-6 w-1/3">
+            <div class="now-playing-cover-container w-16 h-16 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center">
+                <i class="fas fa-music text-2xl text-gray-400"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-base font-medium text-white now-playing-title">Select a song to play</p>
+                <p class="text-sm text-gray-400 now-playing-artist">No artist</p>
+            </div>
+            <button id="like-btn" class="w-6 h-6 text-gray-400 hover:text-chakra-primary transition-colors player-control">
+                <i class="fas fa-heart text-lg"></i>
+            </button>
+            
+            <!-- Audio Visualizer -->
+            <div class="audio-visualizer flex items-end space-x-1 ml-4">
+                <div class="audio-bar h-2"></div>
+                <div class="audio-bar h-4"></div>
+                <div class="audio-bar h-3"></div>
+                <div class="audio-bar h-5"></div>
+                <div class="audio-bar h-2"></div>
+            </div>
+        </div>
+
+        <!-- Player Controls -->
+        <div class="flex-1 flex flex-col items-center space-y-3">
+            <div class="flex items-center space-x-6">
+                <button id="shuffle-btn" class="w-10 h-10 text-gray-400 hover:text-chakra-primary transition-colors player-control">
+                    <i class="fas fa-random text-lg"></i>
+                </button>
+                
+                <button id="prev-btn" class="w-10 h-10 text-gray-400 hover:text-white transition-colors player-control">
+                    <i class="fas fa-step-backward text-xl"></i>
+                </button>
+                
+                <button id="play-btn" class="w-14 h-14 btn-chakra rounded-full flex items-center justify-center hover:scale-105 transition-all player-control">
+                    <i class="fas fa-play text-xl text-white"></i>
+                </button>
+                
+                <button id="next-btn" class="w-10 h-10 text-gray-400 hover:text-white transition-colors player-control">
+                    <i class="fas fa-step-forward text-xl"></i>
+                </button>
+                
+                <button id="repeat-btn" class="w-10 h-10 text-gray-400 hover:text-chakra-primary transition-colors player-control">
+                    <i class="fas fa-redo text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- BIGGER Progress Bar -->
+            <div class="flex items-center space-x-4 w-full max-w-lg">
+                <span class="text-sm text-gray-400 current-time min-w-[40px]">0:00</span>
+                <div id="progress-bar" class="flex-1 progress-bar h-2 cursor-pointer">
+                    <div class="progress-fill w-0 h-full"></div>
+                </div>
+                <span class="text-sm text-gray-400 duration-time min-w-[40px]">0:00</span>
+            </div>
+        </div>
+
+        <!-- Volume & Options -->
+        <div class="flex items-center space-x-6 w-1/3 justify-end">
+            <button id="queue-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                <i class="fas fa-list-music text-lg"></i>
+            </button>
+            
+            <button id="volume-icon" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                <i class="fas fa-volume-up text-lg"></i>
+            </button>
+            
+            <!-- BIGGER Volume Bar -->
+            <div class="flex items-center space-x-3">
+                <div id="volume-bar" class="volume-bar w-24 h-2 cursor-pointer">
+                    <div class="volume-fill w-3/4 h-full"></div>
+                </div>
+            </div>
+            
+            <button id="fullscreen-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                <i class="fas fa-expand text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./js/musicLibrary.js"></script>
+    <script src="./js/player.js"></script>
+    <script src="./js/main.js"></script>
+</body>
+</html>
