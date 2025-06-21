@@ -326,10 +326,12 @@
                 </div>
                 <span class="text-sm text-gray-400 duration-time min-w-[40px]">0:00</span>
             </div>
-        </div>
-
-        <!-- Volume & Options -->
+        </div>        <!-- Volume & Options -->
         <div class="flex items-center space-x-6 w-1/3 justify-end">
+            <button id="add-to-playlist-player-btn" class="w-6 h-6 text-gray-400 hover:text-chakra-primary transition-colors player-control" title="Add to Playlist" style="display: none;">
+                <i class="fas fa-plus text-lg"></i>
+            </button>
+            
             <button id="queue-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
                 <i class="fas fa-list-music text-lg"></i>
             </button>
@@ -352,12 +354,11 @@
     </div>
 
     <!-- Authentication Modals -->
-    <div id="auth-modals-container"></div>
-
-    <!-- Scripts -->
+    <div id="auth-modals-container"></div>    <!-- Scripts -->
     <script src="./js/auth.js"></script>
     <script src="./js/authUI.js"></script>
     <script src="./js/playlistService.js"></script>
+    <script src="./js/playlistUI.js"></script>
     <script src="./js/musicLibrary.js"></script>
     <script src="./js/player.js"></script>
     <script src="./js/main.js"></script>

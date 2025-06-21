@@ -2,6 +2,7 @@ const express = require('express');
 const Playlist = require('../models/Playlist');
 const UserActivity = require('../models/UserActivity');
 const { authenticate, optionalAuth } = require('../middleware/auth');
+const { check, validationResult } = require('express-validator');
 
 const router = express.Router();
 
@@ -119,51 +120,40 @@ router.get('/:id', optionalAuth, async (req, res) => {
 // @route   POST /api/playlists
 // @desc    Create new playlist
 // @access  Private
-router.post('/', authenticate, async (req, res) => {
-    try {
-        const { name, description, isPublic = false, tags = [] } = req.body;
+router.post(
+    '/',
+    [
+        authenticate,
+        [
+            check('name', 'Playlist name is required').not().isEmpty(),
+            check('name', 'Name must be under 100 characters').isLength({ max: 100 }),
+            check('description', 'Description must be under 500 characters').optional().isLength({ max: 500 }),
+        ],
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }        const { name, description, isPublic, tags, coverImage } = req.body;
 
-        if (!name || name.trim().length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Playlist name is required'
+        try {
+            const newPlaylist = new Playlist({
+                name,
+                description,
+                isPublic: isPublic || false,
+                tags: tags || [],
+                coverImage: coverImage || null,
+                owner: req.user.id,
             });
+
+            const playlist = await newPlaylist.save();
+            res.status(201).json(playlist);
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server Error');
         }
-
-        const playlist = new Playlist({
-            name: name.trim(),
-            description: description?.trim(),
-            owner: req.user._id,
-            isPublic,
-            tags
-        });
-
-        await playlist.save();
-        await playlist.populate('owner', 'username fullName avatar');
-
-        // Log activity
-        await new UserActivity({
-            user: req.user._id,
-            activityType: 'playlist_create',
-            playlistId: playlist._id
-        }).save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Playlist created successfully',
-            data: {
-                playlist
-            }
-        });
-
-    } catch (error) {
-        console.error('Create playlist error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
     }
-});
+);
 
 // @route   PUT /api/playlists/:id
 // @desc    Update playlist

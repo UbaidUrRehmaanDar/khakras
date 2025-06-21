@@ -223,12 +223,24 @@ class AuthService {
     // Get user info
     getUser() {
         return this.currentUser;
-    }
-
-    // Update UI based on auth state
+    }    // Update UI based on auth state
     updateUI() {
         this.updateUserProfile();
         this.toggleAuthElements();
+        this.initializePlaylistUI();
+    }
+
+    // Initialize playlist UI if user is authenticated
+    initializePlaylistUI() {
+        if (this.isAuthenticated() && typeof PlaylistUI !== 'undefined') {
+            // Initialize playlist UI only if not already initialized
+            if (!window.playlistUI) {
+                window.playlistUI = new PlaylistUI();
+            } else {
+                // Refresh playlists if UI already exists
+                window.playlistUI.loadUserPlaylists();
+            }
+        }
     }
 
     // Update user profile display

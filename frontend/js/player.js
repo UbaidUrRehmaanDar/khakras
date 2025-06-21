@@ -110,11 +110,15 @@ class ChakrasAudioPlayer {
         const volumeIcon = document.getElementById('volume-icon');
         if (volumeIcon) {
             volumeIcon.addEventListener('click', () => this.toggleMute());
-        }
-
-        const likeBtn = document.getElementById('like-btn');
+        }        const likeBtn = document.getElementById('like-btn');
         if (likeBtn) {
             likeBtn.addEventListener('click', () => this.toggleLike());
+        }
+
+        // Add to playlist button
+        const addToPlaylistBtn = document.getElementById('add-to-playlist-player-btn');
+        if (addToPlaylistBtn) {
+            addToPlaylistBtn.addEventListener('click', () => this.showAddCurrentSongToPlaylist());
         }
     }
 
@@ -249,18 +253,24 @@ class ChakrasAudioPlayer {
     setPlaylist(songs) {
         this.playlist = songs;
         console.log(`📋 Playlist set with ${songs.length} songs`);
-    }
-
-    loadSong(song) {
+    }    loadSong(song) {
+        if (!song || !song.id) {
+            console.log('❌ Cannot load invalid song:', song);
+            return;
+        }
+        
+        console.log('🎵 Loading:', `${song.title} by ${song.artist}`);
+        
         this.currentSong = song;
         this.currentIndex = this.playlist.findIndex(s => s.id === song.id);
         
-        this.audio.src = `http://localhost:5000/api/music/stream/${song.id}`;
+        const streamUrl = `http://localhost:5000/api/music/stream/${song.id}`;
+        this.audio.src = streamUrl;
         this.audio.load();
         
         this.updateNowPlaying();
         this.updateCurrentSongHighlight();
-        console.log(`📀 Loaded: ${song.title} by ${song.artist}`);
+        this.updateAddToPlaylistButton();
     }
 
     togglePlayPause() {
@@ -400,31 +410,37 @@ class ChakrasAudioPlayer {
                 console.log('🔄 Font Awesome icon set to PLAY');
             }
         }
-    }
-
-    updateNowPlaying() {
+    }    updateNowPlaying() {
         const titleEl = document.querySelector('.now-playing-title');
         const artistEl = document.querySelector('.now-playing-artist');
         const coverContainer = document.querySelector('.now-playing-cover-container');
+        const coverElement = document.querySelector('.now-playing-cover');
 
         if (this.currentSong) {
             if (titleEl) titleEl.textContent = this.currentSong.title;
             if (artistEl) artistEl.textContent = this.currentSong.artist;
             
-            if (coverContainer) {
+            // Handle both possible cover container elements
+            const coverEl = coverContainer || coverElement;
+            if (coverEl) {
                 if (this.currentSong.coverImage) {
                     const coverUrl = `http://localhost:5000${this.currentSong.coverImage}`;
-                    coverContainer.innerHTML = `<img src="${coverUrl}" alt="${this.currentSong.title}" class="w-full h-full object-cover rounded-lg">`;
+                    coverEl.innerHTML = `<img src="${coverUrl}" alt="${this.currentSong.title}" class="w-full h-full object-cover rounded-lg">`;
                 } else {
-                    coverContainer.innerHTML = '<i class="fas fa-music text-2xl text-gray-400"></i>';
+                    coverEl.innerHTML = '<i class="fas fa-music text-2xl text-gray-400"></i>';
                 }
             }
+            
+            // Update browser title
+            document.title = `${this.currentSong.title} - ${this.currentSong.artist} | Chakras`;
         } else {
             if (titleEl) titleEl.textContent = 'Select a song to play';
             if (artistEl) artistEl.textContent = 'No artist';
-            if (coverContainer) {
-                coverContainer.innerHTML = '<i class="fas fa-music text-2xl text-gray-400"></i>';
+            const coverEl = coverContainer || coverElement;
+            if (coverEl) {
+                coverEl.innerHTML = '<i class="fas fa-music text-2xl text-gray-400"></i>';
             }
+            document.title = 'Chakras Music Player';
         }
     }
 
@@ -510,12 +526,29 @@ class ChakrasAudioPlayer {
         visualizerBars.forEach(bar => {
             bar.classList.remove('active');
         });
-    }
-
-    playPlaylist(playlist, startIndex = 0) {
+    }    playPlaylist(playlist, startIndex = 0) {
+        console.log('🎵 Playing playlist with', playlist.length, 'songs, starting at index', startIndex);
+        
+        if (!playlist || playlist.length === 0) {
+            console.log('❌ Cannot play empty playlist');
+            return;
+        }
+        
+        if (startIndex >= playlist.length) {
+            console.log('❌ Start index out of bounds, using 0');
+            startIndex = 0;
+        }
+        
         this.playlist = playlist;
         this.currentIndex = startIndex;
-        this.loadSong(playlist[startIndex]);
+        
+        const songToPlay = playlist[startIndex];
+        if (!songToPlay || !songToPlay.id) {
+            console.log('❌ Invalid song at index', startIndex);
+            return;
+        }
+        
+        this.loadSong(songToPlay);
         setTimeout(() => this.play(), 200);
     }
 
@@ -529,10 +562,48 @@ class ChakrasAudioPlayer {
 
     getPlaylist() {
         return this.playlist;
+    }    isCurrentlyPlaying() {
+        return this.isPlaying;
     }
 
-    isCurrentlyPlaying() {
-        return this.isPlaying;
+    // Show add to playlist modal for currently playing song
+    showAddCurrentSongToPlaylist() {
+        if (!this.currentSong) {
+            if (window.chakrasPlayer) {
+                window.chakrasPlayer.showNotification('No song is currently playing', 'info');
+            }
+            return;
+        }
+
+        if (!window.authService || !window.authService.isAuthenticated()) {
+            if (window.chakrasPlayer) {
+                window.chakrasPlayer.showNotification('Please login to add songs to playlists', 'info');
+            }
+            return;
+        }
+
+        const songData = {
+            songId: this.currentSong.id,
+            title: this.currentSong.title,
+            artist: this.currentSong.artist,
+            album: this.currentSong.album,
+            duration: this.currentSong.duration,
+            coverImage: this.currentSong.coverImage
+        };
+
+        if (window.chakrasPlayer) {
+            window.chakrasPlayer.showEnhancedAddToPlaylistModal(songData);
+        }
+    }    // Update add to playlist button visibility
+    updateAddToPlaylistButton() {
+        const addToPlaylistBtn = document.getElementById('add-to-playlist-player-btn');
+        if (addToPlaylistBtn) {
+            if (this.currentSong && window.authService && window.authService.isAuthenticated()) {
+                addToPlaylistBtn.style.display = 'block';
+            } else {
+                addToPlaylistBtn.style.display = 'none';
+            }
+        }
     }
 }
 

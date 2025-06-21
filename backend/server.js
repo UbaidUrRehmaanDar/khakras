@@ -11,7 +11,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8080', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+        // Allow all localhost and 127.0.0.1 origins for development
+        if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -46,12 +53,14 @@ const authRoutes = require('./routes/auth');
 const songRoutes = require('./routes/songs');
 const playlistRoutes = require('./routes/playlists');
 const musicRoutes = require('./routes/music');
+const uploadRoutes = require('./routes/upload');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/music', musicRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
