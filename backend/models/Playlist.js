@@ -31,14 +31,22 @@ const playlistSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    }],
-    coverImage: {
+    }],    coverImage: {
         type: String,
         default: null
     },
     isPublic: {
         type: Boolean,
         default: false
+    },
+    isSystemPlaylist: {
+        type: Boolean,
+        default: false
+    },
+    playlistType: {
+        type: String,
+        enum: ['normal', 'liked_songs'],
+        default: 'normal'
     },
     collaborators: [{
         user: {

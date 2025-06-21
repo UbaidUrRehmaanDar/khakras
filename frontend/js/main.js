@@ -384,9 +384,7 @@ class ChakrasPlayer {
         });
 
         songsHTML += '</div>';
-        songsList.innerHTML = songsHTML;
-
-        this.setupSongListeners();
+        songsList.innerHTML = songsHTML;        this.setupSongListeners();
         
         const playAllBtn = document.getElementById('play-all-btn');
         if (playAllBtn) {
@@ -396,7 +394,10 @@ class ChakrasPlayer {
                 }
             });
         }
-    }    setupSongListeners() {
+
+        // Load like statuses for all songs
+        this.loadLikeStatuses();
+    }setupSongListeners() {
         // Only add listeners to regular song rows, not playlist song rows
         document.querySelectorAll('.song-row:not(.playlist-song-row)').forEach(row => {
             row.addEventListener('click', (e) => {
@@ -416,8 +417,7 @@ class ChakrasPlayer {
                 e.stopPropagation();
                 const row = btn.closest('.song-row');
                 const songId = row.dataset.songId;
-                const song = this.library.songs.find(s => s.id === songId);
-                if (song && this.audioPlayer) {
+                const song = this.library.songs.find(s => s.id === songId);                if (song && this.audioPlayer) {
                     this.audioPlayer.loadSong(song);
                     this.audioPlayer.play();
                 }
@@ -425,17 +425,40 @@ class ChakrasPlayer {
         });
 
         document.querySelectorAll('.like-song-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const songId = btn.dataset.songId;
-                const isLiked = btn.classList.contains('control-active');
                 
-                if (isLiked) {
-                    btn.classList.remove('control-active');
-                    console.log('💔 Unliked song:', songId);
-                } else {
-                    btn.classList.add('control-active');
-                    console.log('❤️ Liked song:', songId);
+                if (!window.authService || !window.authService.isAuthenticated()) {
+                    this.showNotification('Please login to like songs', 'info');
+                    return;
+                }
+
+                try {
+                    const result = await window.likesService.toggleLike(songId);
+                    
+                    if (result.success) {
+                        // Update UI
+                        await window.likesService.updateLikeStatusInUI(songId, result.data.isLiked);
+                        
+                        // Show notification
+                        const song = this.library.songs.find(s => s.id === songId);
+                        const songTitle = song ? song.title : 'Song';
+                        const message = result.data.isLiked ? 
+                            `Added "${songTitle}" to Liked Songs` : 
+                            `Removed "${songTitle}" from Liked Songs`;
+                        this.showNotification(message, 'success');
+
+                        // Refresh playlists if needed
+                        if (result.data.isLiked && window.playlistService) {
+                            setTimeout(() => {
+                                window.playlistService.loadPlaylists();
+                            }, 500);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error toggling like:', error);
+                    this.showNotification('Failed to update like status', 'error');
                 }
             });
         });        document.querySelectorAll('.more-options-btn').forEach(btn => {
@@ -448,7 +471,14 @@ class ChakrasPlayer {
                 }
             });
         });
-    }    renderGenres() {
+        
+        // Load like status for all visible songs
+        if (window.likesService && window.authService && window.authService.isAuthenticated()) {
+            setTimeout(() => {
+                window.likesService.refreshAllLikeStatus();
+            }, 100);
+        }
+    }renderGenres() {
         console.log('🎭 Genres view not yet implemented');
     }
 
@@ -503,7 +533,7 @@ class ChakrasPlayer {
                     <div class="w-48 h-48 rounded-lg overflow-hidden flex-shrink-0">
                         ${playlist.coverImage ? 
                             `<img src="http://localhost:5000${playlist.coverImage}" alt="${playlist.name}" class="w-full h-full object-cover">` :
-                            `<div class="w-full h-full bg-gray-700 flex items-center justify-center">
+                            `<div class="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-music text-6xl text-gray-500"></i>
                             </div>`
                         }
@@ -615,10 +645,11 @@ class ChakrasPlayer {
             });
 
             playlistHTML += '</div>';
-            songsList.innerHTML = playlistHTML;
-
-            // Setup playlist-specific event listeners
+            songsList.innerHTML = playlistHTML;            // Setup playlist-specific event listeners
             this.setupPlaylistListeners(playlist);
+
+            // Load like statuses for playlist songs
+            this.loadLikeStatuses();
 
         } catch (error) {
             console.error('Error rendering playlist:', error);
@@ -753,24 +784,51 @@ class ChakrasPlayer {
                     }
                 }
             });
-        });
-
-        // Like song buttons (reuse existing functionality)
+        });        // Like song buttons (reuse existing functionality)
         document.querySelectorAll('.like-song-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const songId = btn.dataset.songId;
-                const isLiked = btn.classList.contains('control-active');
                 
-                if (isLiked) {
-                    btn.classList.remove('control-active');
-                    console.log('💔 Unliked song:', songId);
-                } else {
-                    btn.classList.add('control-active');
-                    console.log('❤️ Liked song:', songId);
+                if (!window.authService || !window.authService.isAuthenticated()) {
+                    this.showNotification('Please login to like songs', 'info');
+                    return;
+                }
+
+                try {
+                    const result = await window.likesService.toggleLike(songId);
+                    
+                    if (result.success) {
+                        // Update UI
+                        await window.likesService.updateLikeStatusInUI(songId, result.data.isLiked);
+                          // Show notification
+                        const song = this.currentPlaylist?.songs.find(s => s.songId === songId) || 
+                                   this.library?.songs.find(s => s.id === songId);
+                        const songTitle = song ? song.title : 'Song';
+                        const message = result.data.isLiked ? 
+                            `Added "${songTitle}" to Liked Songs` : 
+                            `Removed "${songTitle}" from Liked Songs`;
+                        this.showNotification(message, 'success');
+
+                        // Refresh playlists if needed
+                        if (result.data.isLiked && window.playlistService) {
+                            setTimeout(() => {
+                                window.playlistService.loadPlaylists();
+                            }, 500);
+                        }
+                    }                } catch (error) {
+                    console.error('Error toggling like:', error);
+                    this.showNotification('Failed to update like status', 'error');
                 }
             });
         });
+        
+        // Load like status for all visible songs in playlist
+        if (window.likesService && window.authService && window.authService.isAuthenticated()) {
+            setTimeout(() => {
+                window.likesService.refreshAllLikeStatus();
+            }, 100);
+        }
     }
 
     createAlbumCard(album) {
@@ -1251,6 +1309,33 @@ class ChakrasPlayer {
             notification.classList.add('translate-x-full');
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    async loadLikeStatuses() {
+        if (!window.authService || !window.authService.isAuthenticated() || !window.likesService) {
+            return;
+        }
+
+        try {
+            // Get all visible song IDs
+            const songElements = document.querySelectorAll('[data-song-id]');
+            const songIds = Array.from(songElements).map(el => el.dataset.songId);
+            const uniqueSongIds = [...new Set(songIds)];
+
+            // Check like status for each song
+            for (const songId of uniqueSongIds) {
+                try {
+                    const result = await window.likesService.getLikeStatus(songId);
+                    if (result.success) {
+                        await window.likesService.updateLikeStatusInUI(songId, result.data.isLiked);
+                    }
+                } catch (error) {
+                    console.error(`Error loading like status for song ${songId}:`, error);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading like statuses:', error);
+        }
     }
 }
 

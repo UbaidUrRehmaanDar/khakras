@@ -299,30 +299,36 @@ class PlaylistUI {
     renderUserPlaylists() {
         const container = document.getElementById('user-playlists');
         if (!container) return;
-        
-        container.innerHTML = this.userPlaylists.map(playlist => {
+          container.innerHTML = this.userPlaylists.map(playlist => {
+            const isLikedSongs = playlist.playlistType === 'liked_songs';
+            const isSystemPlaylist = playlist.isSystemPlaylist || isLikedSongs;
+            
             const coverImageHTML = playlist.coverImage ? 
                 `<img src="http://localhost:5000${playlist.coverImage}" alt="${playlist.name}" class="w-full h-full object-cover rounded">` :
-                `<i class="fas fa-music text-gray-400 text-xs"></i>`;
+                isLikedSongs ? 
+                    `<i class="fas fa-heart text-red-500 text-xs"></i>` :
+                    `<i class="fas fa-music text-gray-400 text-xs"></i>`;
             
             return `
             <div class="playlist-item flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group" data-playlist-id="${playlist._id}">
                 <a href="#" data-view="playlist" data-playlist-id="${playlist._id}" class="flex items-center space-x-3 flex-1 min-w-0 playlist-link">
-                    <div class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
+                    <div class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center flex-shrink-0 ${isLikedSongs ? 'bg-red-900/30' : ''}">
                         ${coverImageHTML}
                     </div>
                     <div class="min-w-0 flex-1">
-                        <span class="text-gray-300 group-hover:text-white text-sm truncate block">${playlist.name}</span>
+                        <span class="text-gray-300 group-hover:text-white text-sm truncate block ${isLikedSongs ? 'text-red-400' : ''}">${playlist.name}</span>
                         <span class="text-xs text-gray-500">${playlist.songs.length} songs</span>
                     </div>
                 </a>
                 <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button class="edit-playlist-btn w-6 h-6 text-gray-400 hover:text-white" data-playlist-id="${playlist._id}">
-                        <i class="fas fa-edit text-xs"></i>
-                    </button>
-                    <button class="delete-playlist-btn w-6 h-6 text-gray-400 hover:text-red-400" data-playlist-id="${playlist._id}">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
+                    ${!isSystemPlaylist ? `
+                        <button class="edit-playlist-btn w-6 h-6 text-gray-400 hover:text-white" data-playlist-id="${playlist._id}">
+                            <i class="fas fa-edit text-xs"></i>
+                        </button>
+                        <button class="delete-playlist-btn w-6 h-6 text-gray-400 hover:text-red-400" data-playlist-id="${playlist._id}">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;

@@ -54,6 +54,7 @@ const songRoutes = require('./routes/songs');
 const playlistRoutes = require('./routes/playlists');
 const musicRoutes = require('./routes/music');
 const uploadRoutes = require('./routes/upload');
+const likesRoutes = require('./routes/likes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -61,6 +62,7 @@ app.use('/api/songs', songRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/likes', likesRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

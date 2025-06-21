@@ -16,10 +16,13 @@ router.post('/scan', async (req, res) => {
     }
 
     try {
-        isScanning = true;
-        console.log('🎵 Starting scan request...');
+        isScanning = true;        console.log('🎵 Starting scan request...');
         
         musicLibrary = await musicScanner.scanLibrary();
+        
+        // Make music library globally accessible for other routes (like likes)
+        global.musicLibrary = musicLibrary;
+        
         isScanning = false;
         
         res.json({
@@ -44,6 +47,9 @@ router.get('/songs', (req, res) => {
     if (!musicLibrary) {
         return res.status(400).json({ message: 'Music library not yet scanned. Please scan first.' });
     }
+    
+    // Make sure global access is available
+    global.musicLibrary = musicLibrary;
     
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;

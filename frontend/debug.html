@@ -1,0 +1,358 @@
+<!-- Debug version of index.html with inline testing -->
+<!DOCTYPE html>
+<html lang="en" data-theme="chakra">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chakras - Music Player (Debug)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="./css/style.css" rel="stylesheet">
+</head>
+<body class="bg-chakra-dark text-white font-sans overflow-hidden">
+    <!-- Debug Panel -->
+    <div id="debug-panel" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; max-width: 300px;">
+        <h4>🧪 Debug Panel</h4>
+        <div id="debug-status">Loading...</div>
+        <button onclick="runTests()" style="margin-top: 5px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 3px; cursor: pointer;">Run Tests</button>
+        <button onclick="autoLogin()" style="margin-top: 5px; padding: 5px 10px; background: #666; color: white; border: none; border-radius: 3px; cursor: pointer;">Auto Login</button>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-chakra-darker flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 gradient-chakra rounded-full flex items-center justify-center">
+                        <i class="fas fa-music w-5 h-5 text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">Chakras</h1>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="p-4">
+                <div class="relative">
+                    <input 
+                        id="search-input"
+                        type="text" 
+                        placeholder="Search songs, artists..." 
+                        class="w-full bg-gray-800 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-chakra-primary"
+                    >
+                    <i class="fas fa-search absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 content-scroll overflow-y-auto">
+                <div class="space-y-1">
+                    <!-- Your Music Section -->
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Music</p>
+                    
+                    <a href="#" data-view="home" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-home w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Home</span>
+                    </a>
+                    
+                    <a href="#" data-view="queue" data-auth="required" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-list w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Queue</span>
+                    </a>
+                    
+                    <a href="#" data-view="liked" data-auth="required" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-heart w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Liked Songs</span>
+                    </a>
+                </div>
+
+                <!-- Library Section -->
+                <div class="mt-6 space-y-1">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Library</p>
+                    
+                    <a href="#" data-view="songs" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-music w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Songs</span>
+                    </a>
+                    
+                    <a href="#" data-view="artists" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-user-music w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Artists</span>
+                    </a>
+                    
+                    <a href="#" data-view="albums" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors group">
+                        <i class="fas fa-compact-disc w-5 h-5 text-gray-400 group-hover:text-white"></i>
+                        <span class="text-gray-300 group-hover:text-white">Albums</span>
+                    </a>
+                </div>
+
+                <!-- Playlists Section -->
+                <div id="playlists-section" class="mt-6 space-y-1" data-auth="required">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Playlists</p>
+                        <button id="create-playlist-btn" class="w-5 h-5 text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Playlists will be loaded here by JavaScript -->
+                    <div id="user-playlists"></div>
+                </div>
+            </nav>
+
+            <!-- User Profile (Bottom) -->
+            <div class="p-4 border-t border-gray-700">
+                <!-- Guest State -->
+                <div data-auth="guest" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-gray-300"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-300">Not logged in</p>
+                        <div class="flex space-x-2 mt-1">
+                            <button id="login-btn" class="text-xs text-chakra-primary hover:underline">Login</button>
+                            <span class="text-xs text-gray-500">•</span>
+                            <button id="register-btn" class="text-xs text-chakra-primary hover:underline">Sign up</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Authenticated State -->
+                <div data-auth="required" class="flex items-center space-x-3" style="display: none;">
+                    <div class="user-avatar w-10 h-10 bg-gradient-to-r from-chakra-primary to-chakra-secondary rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold">U</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="user-name text-sm font-medium text-white">User</p>
+                        <p class="user-plan text-xs text-gray-400">Free Plan</p>
+                    </div>
+                    <button id="user-menu-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-ellipsis-h text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col">
+            <!-- Top Bar -->
+            <header class="bg-chakra-darker/80 backdrop-blur-sm border-b border-gray-700 p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-chevron-left text-gray-400"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </button>
+                        <h2 id="view-title" class="text-2xl font-bold">Home</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-bell w-5 h-5"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-cog w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div id="main-content" class="flex-1 overflow-y-auto bg-gradient-to-b from-chakra-primary/10 to-chakra-dark p-6">
+                <!-- Content will be loaded here by JavaScript -->
+                <div class="text-center py-20">
+                    <i class="fas fa-music text-6xl text-gray-600 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-300 mb-2">Welcome to Chakras</h2>
+                    <p class="text-gray-400">Your music library is loading...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Audio Player -->
+    <div id="audio-player" class="bg-chakra-darker border-t border-gray-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Song Info -->
+            <div class="flex items-center space-x-4 w-1/3">
+                <div id="current-song-cover" class="w-14 h-14 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                    <div class="w-full h-full flex items-center justify-center">
+                        <i class="fas fa-music text-2xl text-gray-500"></i>
+                    </div>
+                </div>
+                <div id="current-song-info" class="min-w-0">
+                    <p id="current-song-title" class="text-white font-medium truncate">Select a song</p>
+                    <p id="current-song-artist" class="text-sm text-gray-400 truncate">No artist</p>
+                </div>
+                <button id="like-current-song-btn" class="w-6 h-6 text-gray-400 hover:text-chakra-primary transition-colors" style="display: none;">
+                    <i class="fas fa-heart text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Player Controls -->
+            <div class="flex flex-col items-center w-1/3">
+                <div class="flex items-center space-x-6 mb-2">
+                    <button id="shuffle-btn" class="w-5 h-5 text-gray-400 hover:text-white transition-colors player-control">
+                        <i class="fas fa-random text-sm"></i>
+                    </button>
+                    
+                    <button id="prev-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                        <i class="fas fa-step-backward text-lg"></i>
+                    </button>
+                    
+                    <button id="play-pause-btn" class="w-12 h-12 gradient-chakra rounded-full flex items-center justify-center hover:scale-105 transition-all player-control">
+                        <i class="fas fa-play text-xl text-white play-icon"></i>
+                        <i class="fas fa-pause text-xl text-white pause-icon" style="display: none;"></i>
+                    </button>
+                    
+                    <button id="next-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                        <i class="fas fa-step-forward text-lg"></i>
+                    </button>
+                    
+                    <button id="repeat-btn" class="w-5 h-5 text-gray-400 hover:text-white transition-colors player-control">
+                        <i class="fas fa-redo text-sm"></i>
+                    </button>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="flex items-center space-x-4 w-full max-w-lg">
+                    <span class="text-sm text-gray-400 current-time min-w-[40px]">0:00</span>
+                    <div id="progress-bar" class="flex-1 progress-bar h-2 cursor-pointer">
+                        <div class="progress-fill w-0 h-full"></div>
+                    </div>
+                    <span class="text-sm text-gray-400 duration-time min-w-[40px]">0:00</span>
+                </div>
+            </div>
+            
+            <!-- Volume & Options -->
+            <div class="flex items-center space-x-6 w-1/3 justify-end">
+                <button id="add-to-playlist-player-btn" class="w-6 h-6 text-gray-400 hover:text-chakra-primary transition-colors player-control" title="Add to Playlist" style="display: none;">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+                
+                <button id="queue-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                    <i class="fas fa-list-music text-lg"></i>
+                </button>
+                
+                <button id="volume-icon" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                    <i class="fas fa-volume-up text-lg"></i>
+                </button>
+                
+                <!-- Volume Bar -->
+                <div class="flex items-center space-x-3">
+                    <div id="volume-bar" class="volume-bar w-24 h-2 cursor-pointer">
+                        <div class="volume-fill w-3/4 h-full"></div>
+                    </div>
+                </div>
+                
+                <button id="fullscreen-btn" class="w-6 h-6 text-gray-400 hover:text-white transition-colors player-control">
+                    <i class="fas fa-expand text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modals -->
+    <div id="auth-modals-container"></div>
+
+    <!-- Scripts -->
+    <script src="./js/auth.js"></script>
+    <script src="./js/authUI.js"></script>
+    <script src="./js/likesService.js"></script>
+    <script src="./js/playlistService.js"></script>
+    <script src="./js/playlistUI.js"></script>
+    <script src="./js/musicLibrary.js"></script>
+    <script src="./js/player.js"></script>
+    <script src="./js/main.js"></script>
+
+    <!-- Debug Scripts -->
+    <script>
+        let debugLog = [];
+        
+        function logDebug(message) {
+            debugLog.push(new Date().toLocaleTimeString() + ': ' + message);
+            updateDebugPanel();
+            console.log('🧪 DEBUG:', message);
+        }
+        
+        function updateDebugPanel() {
+            const panel = document.getElementById('debug-status');
+            if (panel) {
+                panel.innerHTML = debugLog.slice(-5).join('<br>');
+            }
+        }
+        
+        async function autoLogin() {
+            logDebug('Auto login starting...');
+            
+            if (!window.authService) {
+                logDebug('❌ Auth service not available');
+                return;
+            }
+            
+            try {
+                const result = await window.authService.login('test', 'test123');
+                logDebug(result.success ? '✅ Login successful' : '❌ Login failed: ' + result.message);
+            } catch (error) {
+                logDebug('❌ Login error: ' + error.message);
+            }
+        }
+        
+        async function runTests() {
+            logDebug('Running tests...');
+            
+            // Test 1: Check services
+            logDebug('Auth service: ' + (window.authService ? '✅' : '❌'));
+            logDebug('Likes service: ' + (window.likesService ? '✅' : '❌'));
+            logDebug('Playlist service: ' + (window.playlistService ? '✅' : '❌'));
+            
+            // Test 2: Check authentication
+            if (window.authService) {
+                logDebug('Authenticated: ' + (window.authService.isAuthenticated() ? '✅' : '❌'));
+                if (window.authService.isAuthenticated()) {
+                    const user = window.authService.getUser();
+                    logDebug('User: ' + (user ? user.username : 'none'));
+                }
+            }
+            
+            // Test 3: Check if songs are loaded
+            const songRows = document.querySelectorAll('.song-row');
+            logDebug('Songs loaded: ' + songRows.length + ' songs');
+            
+            // Test 4: Try to like a song
+            if (window.authService && window.authService.isAuthenticated() && songRows.length > 0) {
+                const firstLikeBtn = document.querySelector('.like-song-btn');
+                if (firstLikeBtn) {
+                    const songId = firstLikeBtn.dataset.songId;
+                    logDebug('Testing like for song: ' + songId);
+                    
+                    try {
+                        const result = await window.likesService.toggleLike(songId);
+                        logDebug(result.success ? '✅ Like successful' : '❌ Like failed: ' + result.message);
+                    } catch (error) {
+                        logDebug('❌ Like error: ' + error.message);
+                    }
+                } else {
+                    logDebug('❌ No like button found');
+                }
+            }
+        }
+        
+        // Auto-run basic tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                logDebug('Page loaded, checking services...');
+                logDebug('Auth service: ' + (window.authService ? '✅' : '❌'));
+                logDebug('Likes service: ' + (window.likesService ? '✅' : '❌'));
+                
+                // Wait for music library to load
+                setTimeout(() => {
+                    const songRows = document.querySelectorAll('.song-row');
+                    logDebug('Songs found: ' + songRows.length);
+                }, 3000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -11,8 +11,31 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticate, async (req, res) => {
     try {
+        // Check if user has a "Liked Songs" playlist, create if not
+        let likedSongsPlaylist = await Playlist.findOne({
+            owner: req.user._id,
+            playlistType: 'liked_songs'
+        });
+
+        if (!likedSongsPlaylist) {
+            // Create Liked Songs playlist
+            likedSongsPlaylist = new Playlist({
+                name: 'Liked Songs',
+                description: 'Your liked songs',
+                owner: req.user._id,
+                isSystemPlaylist: true,
+                playlistType: 'liked_songs',
+                isPublic: false,
+                songs: []
+            });
+            await likedSongsPlaylist.save();
+        }
+
         const playlists = await Playlist.find({ owner: req.user._id })
-            .sort({ createdAt: -1 })
+            .sort({ 
+                playlistType: 1,  // liked_songs first (alphabetically)
+                createdAt: -1 
+            })
             .populate('owner', 'username fullName avatar');
 
         res.json({
@@ -179,12 +202,19 @@ router.put('/:id', authenticate, async (req, res) => {
 
         const { name, description, isPublic, tags, coverImage } = req.body;
 
-        // Update fields
-        if (name) playlist.name = name.trim();
-        if (description !== undefined) playlist.description = description?.trim();
-        if (typeof isPublic === 'boolean') playlist.isPublic = isPublic;
-        if (tags) playlist.tags = tags;
-        if (coverImage !== undefined) playlist.coverImage = coverImage;
+        // Prevent renaming/modifying system playlists
+        if (playlist.isSystemPlaylist || playlist.playlistType === 'liked_songs') {
+            // Only allow certain updates for system playlists
+            if (coverImage !== undefined) playlist.coverImage = coverImage;
+            // Don't allow name/description changes for system playlists
+        } else {
+            // Update fields for normal playlists
+            if (name) playlist.name = name.trim();
+            if (description !== undefined) playlist.description = description?.trim();
+            if (typeof isPublic === 'boolean') playlist.isPublic = isPublic;
+            if (tags) playlist.tags = tags;
+            if (coverImage !== undefined) playlist.coverImage = coverImage;
+        }
 
         await playlist.save();
         await playlist.populate('owner', 'username fullName avatar');
@@ -359,6 +389,14 @@ router.delete('/:id', authenticate, async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'Only the playlist owner can delete it'
+            });
+        }
+
+        // Prevent deletion of system playlists
+        if (playlist.isSystemPlaylist || playlist.playlistType === 'liked_songs') {
+            return res.status(403).json({
+                success: false,
+                message: 'System playlists cannot be deleted'
             });
         }
 

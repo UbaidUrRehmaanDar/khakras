@@ -61,8 +61,7 @@ const userSchema = new mongoose.Schema({
             type: Boolean,
             default: false
         }
-    },
-    musicStats: {
+    },    musicStats: {
         totalPlays: {
             type: Number,
             default: 0
@@ -79,6 +78,10 @@ const userSchema = new mongoose.Schema({
             default: null
         }
     },
+    likedSongs: [{
+        type: String,
+        trim: true
+    }],
     subscription: {
         plan: {
             type: String,

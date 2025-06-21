@@ -54,20 +54,26 @@ class ChakrasAudioPlayer {
             this.updatePlayIcon();
             this.startVisualization();
             console.log('▶️ PLAY EVENT - Font Awesome icon should be PAUSE');
-        });
-
-        this.audio.addEventListener('pause', () => {
+        });        this.audio.addEventListener('pause', () => {
             this.isPlaying = false;
             this.updatePlayIcon();
             this.stopVisualization();
             console.log('⏸️ PAUSE EVENT - Font Awesome icon should be PLAY');
+            console.log('🎵 Paused at time:', this.audio.currentTime, 'Duration:', this.audio.duration);
         });
 
         this.audio.addEventListener('ended', () => {
             this.isPlaying = false;
             this.updatePlayIcon();
+            console.log('🔚 SONG ENDED - moving to next song');
+            console.log('🎵 Current time:', this.audio.currentTime, 'Duration:', this.audio.duration);
+            
             if (!this.isRepeated) {
                 this.nextSong();
+            } else {
+                // Restart the same song
+                this.audio.currentTime = 0;
+                this.play();
             }
         });
     }
@@ -262,7 +268,17 @@ class ChakrasAudioPlayer {
         console.log('🎵 Loading:', `${song.title} by ${song.artist}`);
         
         this.currentSong = song;
-        this.currentIndex = this.playlist.findIndex(s => s.id === song.id);
+        
+        // Only update currentIndex if the song is in the current playlist
+        const songIndexInPlaylist = this.playlist.findIndex(s => s.id === song.id);
+        if (songIndexInPlaylist !== -1) {
+            this.currentIndex = songIndexInPlaylist;
+        } else {
+            // If song is not in current playlist, create a single-song playlist
+            console.log('🎵 Song not in current playlist, creating single-song context');
+            this.playlist = [song];
+            this.currentIndex = 0;
+        }
         
         const streamUrl = `http://localhost:5000/api/music/stream/${song.id}`;
         this.audio.src = streamUrl;
@@ -271,54 +287,81 @@ class ChakrasAudioPlayer {
         this.updateNowPlaying();
         this.updateCurrentSongHighlight();
         this.updateAddToPlaylistButton();
-    }
-
-    togglePlayPause() {
+        
+        // Check like status for the new song
+        if (window.likesService) {
+            window.likesService.checkCurrentSongLikeStatus();
+        }
+    }    togglePlayPause() {
         if (!this.currentSong) {
-            console.log('❌ No song loaded');
+            console.log('❌ No song loaded for toggle');
             return;
         }
 
-        console.log(`🎮 Current state: ${this.isPlaying ? 'PLAYING' : 'PAUSED'}`);
+        console.log(`🎮 Toggle Play/Pause - Current state: ${this.isPlaying ? 'PLAYING' : 'PAUSED'}`);
+        console.log('🎵 Current song:', this.currentSong.title);
 
         if (this.isPlaying) {
             this.pause();
         } else {
             this.play();
         }
-    }
+    }play() {
+        if (!this.currentSong) {
+            console.log('❌ Cannot play - no current song');
+            return;
+        }
 
-    play() {
-        if (!this.currentSong) return;
+        console.log('▶️ Play requested for:', this.currentSong.title);
+        console.log('🎵 Current playlist length:', this.playlist.length);
+        console.log('🎵 Current index:', this.currentIndex);
 
         this.audio.play().then(() => {
-            console.log(`▶️ Playing: ${this.currentSong.title}`);
+            console.log(`✅ Playing: ${this.currentSong.title}`);
         }).catch(e => {
             console.error('❌ Play failed:', e);
         });
     }
 
     pause() {
+        console.log('⏸️ Pause requested for:', this.currentSong ? this.currentSong.title : 'no song');
+        console.log('🎵 Current playlist length:', this.playlist.length);
+        console.log('🎵 Current index:', this.currentIndex);
+        
         this.audio.pause();
-        console.log('⏸️ Paused');
-    }
-
-    nextSong() {
-        if (this.playlist.length === 0) return;
+        console.log('✅ Paused');
+    }    nextSong() {
+        console.log('⏭️ nextSong() called');
+        console.log('🎵 Playlist length:', this.playlist.length);
+        console.log('🎵 Current index:', this.currentIndex);
+        console.log('🎵 Is playing:', this.isPlaying);
+        console.log('🎵 Call stack:', new Error().stack);
+        
+        if (this.playlist.length === 0) {
+            console.log('❌ No playlist available');
+            return;
+        }
         
         let nextIndex;
         
         if (this.isShuffled) {
             nextIndex = Math.floor(Math.random() * this.playlist.length);
+            console.log('🔀 Shuffle mode - random index:', nextIndex);
         } else {
             nextIndex = (this.currentIndex + 1) % this.playlist.length;
+            console.log('▶️ Normal mode - next index:', nextIndex);
         }
         
         this.currentIndex = nextIndex;
-        this.loadSong(this.playlist[nextIndex]);
+        const nextSong = this.playlist[nextIndex];
+        console.log('🎵 Loading next song:', nextSong ? nextSong.title : 'undefined');
+        
+        this.loadSong(nextSong);
         
         if (this.isPlaying) {
+            console.log('🔄 Auto-playing next song because isPlaying =', this.isPlaying);
             setTimeout(() => this.play(), 100);
+        } else {            console.log('⏸️ Not auto-playing because isPlaying =', this.isPlaying);
         }
     }
 
@@ -379,18 +422,43 @@ class ChakrasAudioPlayer {
         }
         this.updateVolumeDisplay();
         this.updateVolumeIcon();
-    }
-
-    toggleLike() {
+    }    async toggleLike() {
         if (!this.currentSong) return;
         
-        const likeBtn = document.getElementById('like-btn');
-        const isLiked = likeBtn.classList.contains('control-active');
-        
-        if (isLiked) {
-            likeBtn.classList.remove('control-active');
-        } else {
-            likeBtn.classList.add('control-active');
+        if (!window.authService || !window.authService.isAuthenticated()) {
+            if (window.chakrasPlayer) {
+                window.chakrasPlayer.showNotification('Please login to like songs', 'info');
+            }
+            return;
+        }
+
+        try {
+            const result = await window.likesService.toggleLike(this.currentSong.id);
+            
+            if (result.success) {
+                // Update UI
+                await window.likesService.updateLikeStatusInUI(this.currentSong.id, result.data.isLiked);
+                
+                // Show notification
+                if (window.chakrasPlayer) {
+                    const message = result.data.isLiked ? 
+                        `Added "${this.currentSong.title}" to Liked Songs` : 
+                        `Removed "${this.currentSong.title}" from Liked Songs`;
+                    window.chakrasPlayer.showNotification(message, 'success');
+                }
+
+                // Refresh playlists to update Liked Songs
+                if (window.playlistService && result.data.isLiked) {
+                    setTimeout(() => {
+                        window.playlistService.loadPlaylists();
+                    }, 500);
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            if (window.chakrasPlayer) {
+                window.chakrasPlayer.showNotification('Failed to update like status', 'error');
+            }
         }
     }
 
